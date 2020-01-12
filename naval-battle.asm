@@ -1,7 +1,3 @@
-
-; You may customize this and other start-up templates; 
-; The location of this template is c:\emu8086\inc\0_com_template.txt
-
 org 100h
 
 org 100h
@@ -33,7 +29,7 @@ botes_Jug2 db "******#####****",13,10
            db "***************",13,10
            db "***************",13,10,'$'
   
-board db " Mar jugador 1 || Mar jugador 2 ",13,10
+board db " Player 1 Sea  || Player 2 Sea  ",13,10
       db "***************||***************",13,10
       db "***************||***************",13,10
       db "***************||***************",13,10
@@ -45,7 +41,7 @@ board db " Mar jugador 1 || Mar jugador 2 ",13,10
       db "***************||***************",13,10
       db "***************||***************",13,10
       db "***************||***************",13,10,
-      db "Puntaje Jug1:00||Puntaje Jug2:00",13,10,'$'
+      db " Points   P1:00|| Points   P2:00",13,10,'$'
          
             
 
@@ -61,18 +57,14 @@ puntos2y db 48,'$'
 puntos1 db 0
 puntos2 db 0
             
-;La variable posicion guarda la posicion del tablero chico en la que se esta.
-;cuando apreto arriba, resta 17(una fila), abajo suma 17, derecha suma 1 e izquierda resta 1.
-;Esto se hace en las funciones de las teclas correspondientes 
-
 
 inicio:
     
     mov dx,OFFSET board 
     mov ah,9 
     int 21h  
-    mov dl, 0          ; Posicion del cursor columna
-    mov dh, 1          ; Posicion del cursor fila
+    mov dl, 0          ; Cursor X position
+    mov dh, 1          ; Cursor Y position
  
 main:   cmp puntos1,15
         je fin
@@ -83,27 +75,27 @@ main:   cmp puntos1,15
         mov ah, 00h
         int 16h
                         
-        cmp al, 120     ;Compara que tecla se presiono, si es 'x'    
+        cmp al, 120     ; Compare if the pressed key is 'x' 
         je Down
                 
-        cmp al, 119     ;Compara que tecla se presiono, si es 'w'    
+        cmp al, 119     ; Compare if the pressed key is 'w'    
         je Up
                 
-        cmp al, 97     ;Compara que tecla se presiono, si es 'a'    
+        cmp al, 97      ; Compare if the pressed key is 'a'    
         je Left
                 
-        cmp al, 100     ;Compara que tecla se presiono, si es 'd'    
+        cmp al, 100     ; Compare if the pressed key is 'd'   
         je Right
                 
-        cmp al, 115     ;Compara que tecla se presiono, si es 's'uncover    
+        cmp al, 115     ; Compare if the pressed key is 's', uncover if true  
         je uncover
                 
-        jmp main        ;Sino, no hace nada y vuelve a pedir una tecla
+        jmp main        ; If the pressed key is none of the above, ask for pressing a key again
 
             
-;------------------- Funciones del teclado --------------------------
+;------------------- Keyboard functions --------------------------
 
-uncover:
+uncover:                       ; Uncover tile
         call acerto
         mov dx, offset disparo
         mov ah, 9
@@ -113,49 +105,49 @@ uncover:
         call SetCursor      
         jmp main  
 
-Right:  cmp dl, 14
+Right:  cmp dl, 14             ; Reposition cursor in X axis to the right
         je main
         cmp dl, 31
         je main
-        add dl, 1           ;para reposicionar el cursor columna
+        add dl, 1           
         inc posicion
-        call SetCursor      ;llamo al procedimiento para setear cursor
+        call SetCursor      
         call calcPosGrande
         jmp main
         ret
 
-Left:   cmp dl, 0
+Left:   cmp dl, 0              ; Reposition cursor in X axis to the left
         je main
         cmp dl, 17
         je main
-        sub dl, 1           ;para reposicionar el cursor columna
+        sub dl, 1           
         dec posicion
-        call SetCursor      ;llamo al procedimiento para setear cursor    
+        call SetCursor      
         call calcPosGrande
         jmp main
 
         ret
 
-Up:     cmp dh, 1
+Up:     cmp dh, 1              ; Reposition cursor in Y axis to up
         je main
-        sub dh, 1           ;para reposicionar el cursor fila
+        sub dh, 1           
         sub posicion,17
-        call SetCursor      ;llamo al procedimiento para setear cursor
+        call SetCursor      
         call calcPosGrande
         jmp main
         ret
 
-Down:   
+Down:                         ; Reposition cursor in Y axis to down
         cmp dh, 11
         je main
-        add dh, 1           ;para reposicionar el cursor fila 
+        add dh, 1           
         add posicion,17
-        call SetCursor      ;llamo al procedimiento para setear cursor
+        call SetCursor      
         call calcPosGrande
         jmp main
         ret
 
-;------------------- Definiciones de procedimientos --------------------------
+;------------------- Functions --------------------------
 
 
 SetCursor proc              
@@ -165,7 +157,7 @@ SetCursor proc
         ret
 SetCursor endp
 
-pasarTurno proc  ;Cambio de turno
+pasarTurno proc    ; Change turn
     mov posicion,0
     cmp turno,0
     je j2
@@ -189,12 +181,12 @@ pasarTurno endp
 
 acerto proc
     
-    cmp board[si],"s",'$' ; Me fijo si ya se disparo a esa posicion
+    cmp board[si],"s",'$'        ; Evaluate if this position was already selected 
     je main   
     cmp board[si],"n",'$'
     je main
     
-    mov ax,0         ;Muevo la posicion respecto del tablero chico a si
+    mov ax,0                     ; Move position respect the small board
     mov al,posicion
     mov si,ax 
     cmp turno,0
@@ -204,14 +196,14 @@ acerto proc
                           
 
     comparacion2:
-    cmp botes_Jug1[si],"#",'$'   ;Evaluo si acerto
+    cmp botes_Jug1[si],"#",'$'   ; Compare if player 2 hits a target
     je fuego
     cmp botes_Jug1[si],"*",'$'
     je agua 
       
     
     comparacion1:
-    cmp botes_Jug2[si],"#",'$'
+    cmp botes_Jug2[si],"#",'$'   ; Compare if player 1 hits a target
     je fuego
     cmp botes_Jug2[si],"*",'$'
     je agua       
@@ -220,13 +212,13 @@ acerto proc
     fuego:
     mov disparo, "s",'$'
     mov si, posGrande      
-    mov board[si], "s",'$' ;Modifico board para agregar la s en el lugar
+    mov board[si], "s",'$'  ; Re-render board adding the 's'
     cmp turno,0
     je suma1
     cmp turno,1
     je suma2
     
-    suma1:                  ;Suma de puntos
+    suma1:                  ; Add points
     inc puntos1
     cmp puntos1,10
     je  dib1
@@ -251,12 +243,12 @@ acerto proc
     agua:
     mov disparo, "n",'$'
     mov si, posGrande
-    mov board[si], "n",'$' ;Modifico board para agregar la n en el lugar
+    mov board[si], "n",'$' ; Re-render board adding the 'n'
     ret 
         
 acerto endp   
     
-proc dibPuntos ;Dibujo los puntos en su posicion correspondiente
+proc dibPuntos ; Drag points in their positions
     mov dh,12
     mov dl,13
     call SetCursor
@@ -290,12 +282,12 @@ dibPuntos endp
 
 proc calcPosGrande
     mov ax,0
-    mov al,dh     ;Columnas x 19
+    mov al,dh     ; Number of columns x 19
     mov cl,19
     mul cl
-    add al,dl     ;+ la posx
+    add al,dl     ; Add posx
     mov si, ax
-    mov posGrande, si ;Calculo de la posicion respecto al tablero grande    
+    mov posGrande, si ; Calculate position respect the big board  
     ret
 calcPosgrande endp     
 
